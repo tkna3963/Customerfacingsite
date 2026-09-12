@@ -1,0 +1,13 @@
+# Firebase Service Account
+firebasejson/serviceAccountKey.json
+
+# Firebase秘密鍵
+**/serviceAccountKey.json
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db

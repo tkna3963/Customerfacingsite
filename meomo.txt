@@ -1,0 +1,7 @@
+case ordered = 1 //オーダー済み
+case cooking = 2 //調理中
+//case undelivered = 3 //未配達　現在未使用
+case shipped = 4 //配達中
+case received = 5 //受け取り済み
+case called = 6 //呼び出し済み
+case served = 7 //提供済み

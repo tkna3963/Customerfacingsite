@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Firestore リアルタイム監視</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #ffffff;
+            color: #222;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        #status {
+            padding: 10px;
+            margin-bottom: 20px;
+            background: #eeeeee;
+            border-radius: 6px;
+        }
+
+        .document {
+            border: 1px solid #cccccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: #f8f8f8;
+        }
+
+        .document-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .field {
+            margin-left: 20px;
+            margin-top: 4px;
+            font-family: monospace;
+        }
+
+        .changed {
+            background-color: #86efac;
+            color: #000000;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .array {
+            margin-left: 20px;
+        }
+
+        .object {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <h1>Firestore リアルタイム監視</h1>
+
+    <div id="status">
+        Firebaseに接続しています...
+    </div>
+
+    <div id="output"></div>
+
+
+    <script type="module">
+
+        // ==================================================
+        // Firebase SDK
+        // ==================================================
+
+        import { initializeApp }
+            from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
+        import {
+            getFirestore,
+            collection,
+            onSnapshot
+        }
+            from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+
+        // ==================================================
+        // 前回のデータを保存
+        // ==================================================
+
+        const previousData = {};
+
+
+        // ==================================================
+        // Firebase開始
+        // ==================================================
+
+        async function startFirebase() {
+
+            try {
+
+                // ------------------------------------------
+                // firebase_config.jsonを読み込む
+                // ------------------------------------------
+
+                const response = await fetch(
+                    "./firebasejson/firebase_config.json"
+                );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "firebase_config.jsonを読み込めませんでした"
+                    );
+
+                }
+
+
+                const firebaseConfig =
+                    await response.json();
+
+
+                console.log(
+                    "Firebase Config:",
+                    firebaseConfig
+                );
+
+
+                // ------------------------------------------
+                // Firebase初期化
+                // ------------------------------------------
+
+                const app =
+                    initializeApp(firebaseConfig);
+
+
+                // ------------------------------------------
+                // Firestore
+                // ------------------------------------------
+
+                const db =
+                    getFirestore(app);
+
+
+                document.getElementById(
+                    "status"
+                ).textContent =
+                    "Firebase接続成功";
+
+
+                // ==================================================
+                // testコレクションを取得
+                // ==================================================
+
+                const testCollection =
+                    collection(db, "test");
+
+
+                // ==================================================
+                // リアルタイム監視
+                // ==================================================
+
+                onSnapshot(
+
+                    testCollection,
+
+                    (snapshot) => {
+
+                        const output =
+                            document.getElementById(
+                                "output"
+                            );
+
+
+                        output.innerHTML = "";
+
+
+                        // ------------------------------------------
+                        // ドキュメントごとに処理
+                        // ------------------------------------------
+
+                        snapshot.forEach((doc) => {
+
+                            const id =
+                                doc.id;
+
+                            const newData =
+                                doc.data();
+
+                            const oldData =
+                                previousData[id];
+
+
+                            // --------------------------------------
+                            // ドキュメント表示
+                            // --------------------------------------
+
+                            const documentDiv =
+                                window.document.createElement(
+                                    "div"
+                                );
+
+                            documentDiv.className =
+                                "document";
+
+
+                            // --------------------------------------
+                            // Document ID
+                            // --------------------------------------
+
+                            const title =
+                                window.document.createElement(
+                                    "div"
+                                );
+
+                            title.className =
+                                "document-title";
+
+                            title.textContent =
+                                "Document ID: " + id;
+
+
+                            documentDiv.appendChild(
+                                title
+                            );
+
+
+                            // --------------------------------------
+                            // データ表示
+                            // --------------------------------------
+
+                            renderObject(
+                                newData,
+                                oldData,
+                                documentDiv
+                            );
+
+
+                            output.appendChild(
+                                documentDiv
+                            );
+
+
+                            // --------------------------------------
+                            // 今回のデータを保存
+                            // --------------------------------------
+
+                            previousData[id] =
+                                JSON.parse(
+                                    JSON.stringify(
+                                        newData
+                                    )
+                                );
+
+                        });
+
+
+                    },
+
+
+                    // ==================================================
+                    // Firestoreエラー
+                    // ==================================================
+
+                    (error) => {
+
+                        console.error(
+                            "Firestore Error:",
+                            error
+                        );
+
+
+                        document.getElementById(
+                            "status"
+                        ).textContent =
+                            "Firestore接続エラー";
+
+
+                        document.getElementById(
+                            "output"
+                        ).textContent =
+                            error.message;
+
+                    }
+
+                );
+
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+
+                document.getElementById(
+                    "status"
+                ).textContent =
+                    "エラー";
+
+
+                document.getElementById(
+                    "output"
+                ).textContent =
+                    error.message;
+
+            }
+
+        }
+
+
+        // ==================================================
+        // オブジェクトを表示
+        // ==================================================
+
+        function renderObject(
+            object,
+            oldObject,
+            parent
+        ) {
+
+            Object.entries(object).forEach(
+                ([key, value]) => {
+
+                    const field =
+                        window.document.createElement(
+                            "div"
+                        );
+
+                    field.className =
+                        "field";
+
+
+                    // ------------------------------------------
+                    // 前回の値
+                    // ------------------------------------------
+
+                    const oldValue =
+                        oldObject
+                            ? oldObject[key]
+                            : undefined;
+
+
+                    // ------------------------------------------
+                    // オブジェクト
+                    // ------------------------------------------
+
+                    if (
+                        value !== null &&
+                        typeof value === "object" &&
+                        !Array.isArray(value)
+                    ) {
+
+                        const keyElement =
+                            window.document.createElement(
+                                "span"
+                            );
+
+                        keyElement.textContent =
+                            key + ": ";
+
+
+                        field.appendChild(
+                            keyElement
+                        );
+
+
+                        const objectDiv =
+                            window.document.createElement(
+                                "div"
+                            );
+
+                        objectDiv.className =
+                            "object";
+
+
+                        renderObject(
+                            value,
+                            oldValue,
+                            objectDiv
+                        );
+
+
+                        field.appendChild(
+                            objectDiv
+                        );
+
+
+                        parent.appendChild(
+                            field
+                        );
+
+
+                        return;
+                    }
+
+
+                    // ------------------------------------------
+                    // 配列
+                    // ------------------------------------------
+
+                    if (Array.isArray(value)) {
+
+                        const keyElement =
+                            window.document.createElement(
+                                "span"
+                            );
+
+                        keyElement.textContent =
+                            key + ":";
+
+
+                        field.appendChild(
+                            keyElement
+                        );
+
+
+                        const arrayDiv =
+                            window.document.createElement(
+                                "div"
+                            );
+
+                        arrayDiv.className =
+                            "array";
+
+
+                        value.forEach(
+                            (item, index) => {
+
+                                const itemDiv =
+                                    window.document.createElement(
+                                        "div"
+                                    );
+
+
+                                // オブジェクトの場合
+                                if (
+                                    item !== null &&
+                                    typeof item === "object" &&
+                                    !Array.isArray(item)
+                                ) {
+
+                                    renderObject(
+                                        item,
+                                        oldValue
+                                            ? oldValue[index]
+                                            : undefined,
+                                        itemDiv
+                                    );
+
+                                }
+
+                                // 普通の値
+                                else {
+
+                                    const changed =
+                                        !isEqual(
+                                            item,
+                                            oldValue
+                                                ? oldValue[index]
+                                                : undefined
+                                        );
+
+
+                                    const valueSpan =
+                                        window.document.createElement(
+                                            "span"
+                                        );
+
+
+                                    valueSpan.textContent =
+                                        JSON.stringify(
+                                            item
+                                        );
+
+
+                                    if (
+                                        oldObject !== undefined &&
+                                        changed
+                                    ) {
+
+                                        valueSpan.classList.add(
+                                            "changed"
+                                        );
+
+                                    }
+
+
+                                    itemDiv.appendChild(
+                                        valueSpan
+                                    );
+
+                                }
+
+
+                                arrayDiv.appendChild(
+                                    itemDiv
+                                );
+
+                            }
+                        );
+
+
+                        field.appendChild(
+                            arrayDiv
+                        );
+
+
+                        parent.appendChild(
+                            field
+                        );
+
+
+                        return;
+                    }
+
+
+                    // ------------------------------------------
+                    // 普通の値
+                    // ------------------------------------------
+
+                    const keyElement =
+                        window.document.createElement(
+                            "span"
+                        );
+
+                    keyElement.textContent =
+                        key + ": ";
+
+
+                    field.appendChild(
+                        keyElement
+                    );
+
+
+                    const valueSpan =
+                        window.document.createElement(
+                            "span"
+                        );
+
+
+                    valueSpan.textContent =
+                        JSON.stringify(
+                            value
+                        );
+
+
+                    // ------------------------------------------
+                    // 値が変更されているか
+                    // ------------------------------------------
+
+                    const changed =
+                        !isEqual(
+                            value,
+                            oldValue
+                        );
+
+
+                    // 初回読み込みでは緑にしない
+                    if (
+                        oldObject !== undefined &&
+                        changed
+                    ) {
+
+                        valueSpan.classList.add(
+                            "changed"
+                        );
+
+                    }
+
+
+                    field.appendChild(
+                        valueSpan
+                    );
+
+
+                    parent.appendChild(
+                        field
+                    );
+
+                }
+            );
+
+        }
+
+
+        // ==================================================
+        // 値を比較
+        // ==================================================
+
+        function isEqual(
+            value1,
+            value2
+        ) {
+
+            return JSON.stringify(
+                value1
+            ) === JSON.stringify(
+                value2
+            );
+
+        }
+
+
+        // ==================================================
+        // Firebase開始
+        // ==================================================
+
+        startFirebase();
+
+    </script>
+
+</body>
+
+</html>
