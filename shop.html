@@ -1,0 +1,2366 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>デジタル番号札 発券</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            padding: 30px;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background: #f3f4f6;
+
+            color: #222;
+
+        }
+
+
+        .container {
+
+            max-width: 900px;
+
+            margin: 0 auto;
+
+        }
+
+
+        h1 {
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .panel {
+
+            background: white;
+
+            border-radius: 12px;
+
+            padding: 25px;
+
+            margin-bottom: 20px;
+
+            box-shadow:
+                0 2px 8px
+                rgba(0, 0, 0, 0.08);
+
+        }
+
+
+        .panel-title {
+
+            font-size: 20px;
+
+            font-weight: bold;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        #status {
+
+            padding: 12px;
+
+            border-radius: 8px;
+
+            background: #eeeeee;
+
+            white-space: pre-wrap;
+
+        }
+
+
+        .issue-area {
+
+            text-align: center;
+
+        }
+
+
+        .item-form {
+
+            display: grid;
+
+            grid-template-columns: 2fr 1fr 1fr auto;
+
+            gap: 10px;
+
+            margin-bottom: 15px;
+
+        }
+
+
+        .item-form input {
+
+            padding: 10px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 8px;
+
+            font-size: 15px;
+
+            width: 100%;
+
+        }
+
+
+        #addItemButton {
+
+            padding: 10px 16px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background: #444;
+
+            color: white;
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+        }
+
+
+        #addItemButton:hover {
+
+            background: #222;
+
+        }
+
+
+        .item-list {
+
+            text-align: left;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .item-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding: 10px 12px;
+
+            background: #f8f8f8;
+
+            border-radius: 8px;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .item-row-name {
+
+            font-weight: bold;
+
+        }
+
+
+        .item-row-detail {
+
+            color: #666;
+
+            font-size: 14px;
+
+            margin-left: 8px;
+
+        }
+
+
+        .removeItemButton {
+
+            border: none;
+
+            background: #ef4444;
+
+            color: white;
+
+            border-radius: 6px;
+
+            padding: 6px 12px;
+
+            cursor: pointer;
+
+            font-size: 13px;
+
+        }
+
+
+        .removeItemButton:hover {
+
+            background: #dc2626;
+
+        }
+
+
+        .item-empty {
+
+            color: #999;
+
+            text-align: center;
+
+            padding: 15px;
+
+        }
+
+
+        .discount-row {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 10px;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .discount-row input {
+
+            padding: 10px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 8px;
+
+            font-size: 15px;
+
+            width: 120px;
+
+        }
+
+
+        /* ==================================================
+           注文一覧管理（ステータス変更）
+        ================================================== */
+
+        .order-manage-list {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 16px;
+
+        }
+
+
+        .order-manage-empty {
+
+            color: #999;
+
+            text-align: center;
+
+            padding: 20px;
+
+        }
+
+
+        .order-card {
+
+            background: #f8f9fb;
+
+            border: 1px solid #e5e7eb;
+
+            border-radius: 12px;
+
+            padding: 18px;
+
+        }
+
+
+        .order-card-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: baseline;
+
+            margin-bottom: 8px;
+
+            flex-wrap: wrap;
+
+            gap: 8px;
+
+        }
+
+
+        .order-card-id {
+
+            font-weight: bold;
+
+            font-size: 16px;
+
+            font-family: monospace;
+
+        }
+
+
+        .order-card-time {
+
+            color: #888;
+
+            font-size: 13px;
+
+        }
+
+
+        .order-card-items {
+
+            color: #555;
+
+            font-size: 14px;
+
+            margin-bottom: 14px;
+
+            line-height: 1.6;
+
+        }
+
+
+        .status-slider-row {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+        }
+
+
+        .status-slider-row input[type="range"] {
+
+            flex: 1;
+
+            accent-color: #2563eb;
+
+        }
+
+
+        .status-slider-label {
+
+            min-width: 92px;
+
+            text-align: right;
+
+            font-weight: bold;
+
+            font-size: 14px;
+
+        }
+
+
+        .status-badge {
+
+            display: inline-block;
+
+            padding: 4px 10px;
+
+            border-radius: 999px;
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+            color: white;
+
+            background: #94a3b8;
+
+        }
+
+
+        .status-badge.st-ordered {
+            background: #64748b;
+        }
+
+        .status-badge.st-cooking {
+            background: #f59e0b;
+        }
+
+        .status-badge.st-shipped {
+            background: #3b82f6;
+        }
+
+        .status-badge.st-received {
+            background: #10b981;
+        }
+
+        .status-badge.st-called {
+            background: #8b5cf6;
+        }
+
+        .status-badge.st-served {
+            background: #16a34a;
+        }
+
+
+        #refreshOrdersButton {
+
+            padding: 8px 16px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background: #444;
+
+            color: white;
+
+            font-size: 14px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+        }
+
+
+        #refreshOrdersButton:hover {
+
+            background: #222;
+
+        }
+
+
+        #issueButton {
+
+            width: 100%;
+
+            max-width: 500px;
+
+            padding: 20px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: #2563eb;
+
+            color: white;
+
+            font-size: 22px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+        }
+
+
+        #issueButton:hover {
+
+            background: #1d4ed8;
+
+        }
+
+
+        #issueButton:disabled {
+
+            background: #999;
+
+            cursor: not-allowed;
+
+        }
+
+
+        #result {
+
+            display: none;
+
+        }
+
+
+        .result-grid {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 30px;
+
+        }
+
+
+        .ticket-number {
+
+            font-size: 70px;
+
+            font-weight: bold;
+
+            text-align: center;
+
+            margin: 20px 0;
+
+        }
+
+
+        .info {
+
+            margin-top: 15px;
+
+        }
+
+
+        .info-label {
+
+            color: #666;
+
+            font-size: 14px;
+
+            margin-bottom: 4px;
+
+        }
+
+
+        .info-value {
+
+            font-weight: bold;
+
+            word-break: break-all;
+
+        }
+
+
+        .qr-area {
+
+            text-align: center;
+
+        }
+
+
+        #qrcode {
+
+            display: inline-block;
+
+            padding: 15px;
+
+            background: white;
+
+            border: 1px solid #ddd;
+
+            border-radius: 10px;
+
+        }
+
+
+        .url-box {
+
+            margin-top: 15px;
+
+            padding: 12px;
+
+            background: #f3f4f6;
+
+            border-radius: 8px;
+
+            word-break: break-all;
+
+            font-family: monospace;
+
+            font-size: 13px;
+
+            text-align: left;
+
+        }
+
+
+        #copyButton {
+
+            margin-top: 10px;
+
+            padding: 12px 20px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background: #16a34a;
+
+            color: white;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+        }
+
+
+        #copyButton:hover {
+
+            background: #15803d;
+
+        }
+
+
+        @media (max-width: 700px) {
+
+            body {
+
+                padding: 15px;
+
+            }
+
+
+            .result-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .ticket-number {
+
+                font-size: 55px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <h1>
+        デジタル番号札 発券
+    </h1>
+
+
+    <!-- ==========================================
+         Firebase状態
+    =========================================== -->
+
+    <div class="panel">
+
+        <div class="panel-title">
+            システム状態
+        </div>
+
+
+        <div id="status">
+            Firebaseに接続しています...
+        </div>
+
+    </div>
+
+
+
+    <!-- ==========================================
+         発券
+    =========================================== -->
+
+    <div class="panel">
+
+        <div class="panel-title">
+            ご注文入力
+        </div>
+
+
+        <!-- 商品追加フォーム -->
+
+        <div class="item-form">
+
+            <input
+                type="text"
+                id="itemNameInput"
+                placeholder="商品名（例: ラーメン）"
+            >
+
+            <input
+                type="number"
+                id="itemPriceInput"
+                placeholder="単価"
+                min="0"
+            >
+
+            <input
+                type="number"
+                id="itemQuantityInput"
+                placeholder="数量"
+                min="1"
+                value="1"
+            >
+
+            <button
+                id="addItemButton"
+            >
+                追加
+            </button>
+
+        </div>
+
+
+        <!-- 商品一覧 -->
+
+        <div
+            class="item-list"
+            id="itemList"
+        >
+
+            <div class="item-empty">
+                商品が追加されていません
+            </div>
+
+        </div>
+
+
+        <!-- 割引 -->
+
+        <div class="discount-row">
+
+            <label for="discountInput">
+                割引（円）
+            </label>
+
+            <input
+                type="number"
+                id="discountInput"
+                min="0"
+                value="0"
+            >
+
+        </div>
+
+
+        <div class="issue-area">
+
+            <p>
+                入力した内容で番号札を発券します。
+            </p>
+
+
+            <button
+                id="issueButton"
+                disabled
+            >
+                番号札を発券
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ==========================================
+         発券結果
+    =========================================== -->
+
+    <div
+        class="panel"
+        id="result"
+    >
+
+        <div class="panel-title">
+            発券完了
+        </div>
+
+
+        <div class="result-grid">
+
+
+            <!-- ======================================
+                 番号情報
+            ======================================= -->
+
+            <div>
+
+                <div class="info">
+
+                    <div class="info-label">
+                        番号
+                    </div>
+
+
+                    <div
+                        class="ticket-number"
+                        id="resultTicketNumber"
+                    >
+                        -
+                    </div>
+
+                </div>
+
+
+                <div class="info">
+
+                    <div class="info-label">
+                        Document ID
+                    </div>
+
+
+                    <div
+                        class="info-value"
+                        id="resultDocumentId"
+                    >
+                        -
+                    </div>
+
+                </div>
+
+
+                <div class="info">
+
+                    <div class="info-label">
+                        Order ID
+                    </div>
+
+
+                    <div
+                        class="info-value"
+                        id="resultOrderId"
+                    >
+                        -
+                    </div>
+
+                </div>
+
+
+                <div class="info">
+
+                    <div class="info-label">
+                        Status
+                    </div>
+
+
+                    <div
+                        class="info-value"
+                        id="resultStatus"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+
+                <div class="info">
+
+                    <div class="info-label">
+                        ご注文内容
+                    </div>
+
+
+                    <div
+                        class="item-list"
+                        id="resultItemList"
+                    >
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ======================================
+                 QRコード
+            ======================================= -->
+
+            <div class="qr-area">
+
+                <div id="qrcode"></div>
+
+
+                <div
+                    class="url-box"
+                    id="resultUrl"
+                >
+                    -
+                </div>
+
+
+                <button
+                    id="copyButton"
+                >
+                    URLをコピー
+                </button>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+    <!-- ==========================================
+         注文一覧管理（ステータス変更）
+    =========================================== -->
+
+    <div class="panel">
+
+        <div
+            class="panel-title"
+            style="display: flex; justify-content: space-between; align-items: center;"
+        >
+
+            <span>
+                注文管理
+            </span>
+
+            <button
+                id="refreshOrdersButton"
+            >
+                更新
+            </button>
+
+        </div>
+
+
+        <div
+            class="order-manage-list"
+            id="orderManageList"
+        >
+
+            <div class="order-manage-empty">
+                読み込み中...
+            </div>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+
+<!-- ==========================================
+     QRコードライブラリ
+=========================================== -->
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+></script>
+
+
+
+<!-- ==========================================
+     Firebase
+=========================================== -->
+
+<script type="module">
+
+
+    import {
+        initializeApp
+    }
+    from
+    "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
+
+    import {
+        getFirestore,
+        doc,
+        getDoc,
+        setDoc,
+        updateDoc,
+        collection,
+        onSnapshot
+    }
+    from
+    "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+
+
+    // ==================================================
+    // Firebase
+    // ==================================================
+
+    let db = null;
+
+
+
+    // ==================================================
+    // 現在のURL
+    // ==================================================
+
+    let lastUrl = "";
+
+
+
+    // ==================================================
+    // 現在入力中の商品リスト
+    // ==================================================
+
+    let currentItems = [];
+
+
+
+    // ==================================================
+    // ドキュメントID生成
+    //
+    // temp.py と同じ形式:
+    // ランダム6文字 + MMDD
+    // ==================================================
+
+    const ID_CHARS =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+        "abcdefghijklmnopqrstuvwxyz" +
+        "0123456789";
+
+    function randomString(length = 6) {
+
+        let result = "";
+
+        for (let i = 0; i < length; i++) {
+
+            result +=
+                ID_CHARS.charAt(
+                    Math.floor(
+                        Math.random() *
+                        ID_CHARS.length
+                    )
+                );
+
+        }
+
+        return result;
+
+    }
+
+    function generateDocumentId() {
+
+        const now = new Date();
+
+        const mm =
+            String(now.getMonth() + 1)
+                .padStart(2, "0");
+
+        const dd =
+            String(now.getDate())
+                .padStart(2, "0");
+
+        return (
+            randomString(6) +
+            mm +
+            dd
+        );
+
+    }
+
+
+
+    // ==================================================
+    // Firebase開始
+    // ==================================================
+
+    async function startFirebase() {
+
+        try {
+
+            // ------------------------------------------
+            // Firebase設定読み込み
+            // ------------------------------------------
+
+            const response =
+                await fetch(
+                    "./firebasejson/firebase_config.json"
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "firebase_config.jsonを読み込めませんでした"
+                );
+
+            }
+
+
+            const firebaseConfig =
+                await response.json();
+
+
+
+            // ------------------------------------------
+            // Firebase初期化
+            // ------------------------------------------
+
+            const app =
+                initializeApp(
+                    firebaseConfig
+                );
+
+
+            // ------------------------------------------
+            // Firestore
+            // ------------------------------------------
+
+            db =
+                getFirestore(
+                    app
+                );
+
+
+
+            // ------------------------------------------
+            // 接続成功
+            // ------------------------------------------
+
+            document.getElementById(
+                "status"
+            ).textContent =
+                "Firebase接続成功\n" +
+                "発券準備ができました";
+
+
+            document.getElementById(
+                "issueButton"
+            ).disabled =
+                false;
+
+
+            // ------------------------------------------
+            // 注文一覧のリアルタイム監視を開始
+            // ------------------------------------------
+
+            watchOrders();
+
+
+        }
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+
+            document.getElementById(
+                "status"
+            ).textContent =
+                "Firebase接続エラー\n\n" +
+                error.message;
+
+        }
+
+    }
+
+
+
+    // ==================================================
+    // 商品リスト表示
+    // ==================================================
+
+    function renderItemList() {
+
+        const itemList =
+            document.getElementById(
+                "itemList"
+            );
+
+
+        itemList.innerHTML =
+            "";
+
+
+        if (currentItems.length === 0) {
+
+            itemList.innerHTML =
+                '<div class="item-empty">商品が追加されていません</div>';
+
+            return;
+
+        }
+
+
+        currentItems.forEach(
+            (item, index) => {
+
+                const row =
+                    document.createElement(
+                        "div"
+                    );
+
+                row.className =
+                    "item-row";
+
+
+                const left =
+                    document.createElement(
+                        "div"
+                    );
+
+                left.innerHTML =
+                    '<span class="item-row-name">' +
+                    item.productName +
+                    '</span>' +
+                    '<span class="item-row-detail">' +
+                    "¥" +
+                    item.unitPrice.toLocaleString("ja-JP") +
+                    " × " +
+                    item.quantity +
+                    "</span>";
+
+
+                const removeButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                removeButton.className =
+                    "removeItemButton";
+
+                removeButton.textContent =
+                    "削除";
+
+                removeButton.addEventListener(
+                    "click",
+                    () => {
+
+                        currentItems.splice(
+                            index,
+                            1
+                        );
+
+                        renderItemList();
+
+                    }
+                );
+
+
+                row.appendChild(
+                    left
+                );
+
+                row.appendChild(
+                    removeButton
+                );
+
+
+                itemList.appendChild(
+                    row
+                );
+
+            }
+        );
+
+    }
+
+
+    // ==================================================
+    // 商品追加ボタン
+    // ==================================================
+
+    document.getElementById(
+        "addItemButton"
+    ).addEventListener(
+        "click",
+        () => {
+
+            const nameInput =
+                document.getElementById(
+                    "itemNameInput"
+                );
+
+            const priceInput =
+                document.getElementById(
+                    "itemPriceInput"
+                );
+
+            const quantityInput =
+                document.getElementById(
+                    "itemQuantityInput"
+                );
+
+
+            const productName =
+                nameInput.value.trim();
+
+            const unitPrice =
+                Number(
+                    priceInput.value
+                );
+
+            const quantity =
+                Number(
+                    quantityInput.value
+                );
+
+
+            if (!productName) {
+
+                alert(
+                    "商品名を入力してください"
+                );
+
+                return;
+            }
+
+
+            if (
+                !Number.isFinite(unitPrice) ||
+                unitPrice < 0
+            ) {
+
+                alert(
+                    "単価を正しく入力してください"
+                );
+
+                return;
+            }
+
+
+            if (
+                !Number.isInteger(quantity) ||
+                quantity < 1
+            ) {
+
+                alert(
+                    "数量を正しく入力してください"
+                );
+
+                return;
+            }
+
+
+            currentItems.push(
+                {
+                    productName:
+                        productName,
+
+                    unitPrice:
+                        unitPrice,
+
+                    quantity:
+                        quantity
+                }
+            );
+
+
+            renderItemList();
+
+
+            nameInput.value =
+                "";
+
+            priceInput.value =
+                "";
+
+            quantityInput.value =
+                "1";
+
+            nameInput.focus();
+
+        }
+    );
+
+
+
+    // ==================================================
+    // ステータス定義
+    //
+    // 1 = 注文済み (ordered)
+    // 2 = 調理中 (cooking)
+    // 3 = 未配達 (undelivered) ※現在未使用
+    // 4 = 配達中 (shipped)
+    // 5 = 受け取り済み (received)
+    // 6 = 呼び出し済み (called)
+    // 7 = 提供済み (served)
+    // ==================================================
+
+    // スライダーに表示するステータス（3を除く）
+    const STATUS_STEPS = [
+        1, 2, 4, 5, 6, 7
+    ];
+
+    const STATUS_INFO = {
+
+        1: { label: "注文済み", cls: "st-ordered" },
+        2: { label: "調理中", cls: "st-cooking" },
+        4: { label: "配達中", cls: "st-shipped" },
+        5: { label: "受け取り済み", cls: "st-received" },
+        6: { label: "呼び出し済み", cls: "st-called" },
+        7: { label: "提供済み", cls: "st-served" }
+
+    };
+
+
+    // ==================================================
+    // 注文一覧のリアルタイム監視
+    // ==================================================
+
+    let unsubscribeOrders = null;
+
+    function watchOrders() {
+
+        if (unsubscribeOrders) {
+
+            unsubscribeOrders();
+
+        }
+
+        const ordersQuery =
+            collection(
+                db,
+                "test"
+            );
+
+        unsubscribeOrders =
+            onSnapshot(
+                ordersQuery,
+
+                (snapshot) => {
+
+                    const orders =
+                        [];
+
+                    snapshot.forEach(
+                        (docSnap) => {
+
+                            orders.push(
+                                {
+                                    id: docSnap.id,
+                                    data: docSnap.data()
+                                }
+                            );
+
+                        }
+                    );
+
+                    orders.sort(
+                        (a, b) =>
+                            b.id.localeCompare(a.id)
+                    );
+
+                    renderOrderManageList(
+                        orders
+                    );
+
+                },
+
+                (error) => {
+
+                    console.error(
+                        error
+                    );
+
+                    document.getElementById(
+                        "orderManageList"
+                    ).innerHTML =
+                        '<div class="order-manage-empty">注文一覧を取得できませんでした</div>';
+
+                }
+            );
+
+    }
+
+
+    // ==================================================
+    // 注文一覧の描画
+    // ==================================================
+
+    function renderOrderManageList(orders) {
+
+        const listEl =
+            document.getElementById(
+                "orderManageList"
+            );
+
+
+        listEl.innerHTML =
+            "";
+
+
+        if (orders.length === 0) {
+
+            listEl.innerHTML =
+                '<div class="order-manage-empty">まだ注文がありません</div>';
+
+            return;
+
+        }
+
+
+        orders.forEach(
+            (order) => {
+
+                listEl.appendChild(
+                    buildOrderCard(
+                        order.id,
+                        order.data
+                    )
+                );
+
+            }
+        );
+
+    }
+
+
+    function buildOrderCard(documentId, data) {
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "order-card";
+
+
+        // ------------------------------------------
+        // ヘッダー（ID・作成日時・ステータスバッジ）
+        // ------------------------------------------
+
+        const header =
+            document.createElement(
+                "div"
+            );
+
+        header.className =
+            "order-card-header";
+
+
+        const idEl =
+            document.createElement(
+                "div"
+            );
+
+        idEl.className =
+            "order-card-id";
+
+        idEl.textContent =
+            documentId;
+
+
+        const currentStatus =
+            STATUS_STEPS.includes(Number(data.status))
+                ? Number(data.status)
+                : 1;
+
+        const statusInfo =
+            STATUS_INFO[currentStatus] ??
+            STATUS_INFO[1];
+
+
+        const badge =
+            document.createElement(
+                "span"
+            );
+
+        badge.className =
+            "status-badge " +
+            statusInfo.cls;
+
+        badge.textContent =
+            statusInfo.label;
+
+
+        header.appendChild(
+            idEl
+        );
+
+        header.appendChild(
+            badge
+        );
+
+
+        // ------------------------------------------
+        // 作成日時
+        // ------------------------------------------
+
+        const timeEl =
+            document.createElement(
+                "div"
+            );
+
+        timeEl.className =
+            "order-card-time";
+
+        timeEl.textContent =
+            data.creatAt ??
+            "-";
+
+
+        // ------------------------------------------
+        // 商品明細
+        // ------------------------------------------
+
+        const itemsEl =
+            document.createElement(
+                "div"
+            );
+
+        itemsEl.className =
+            "order-card-items";
+
+        const items =
+            Array.isArray(data.item)
+                ? data.item
+                : [];
+
+        if (items.length === 0) {
+
+            itemsEl.textContent =
+                "商品情報なし";
+
+        } else {
+
+            itemsEl.textContent =
+                items.map(
+                    (item) =>
+                        (item.productName ?? "商品") +
+                        " × " +
+                        (item.quantity ?? 0)
+                ).join("、");
+
+        }
+
+
+        // ------------------------------------------
+        // ステータススライダー
+        // ------------------------------------------
+
+        const sliderRow =
+            document.createElement(
+                "div"
+            );
+
+        sliderRow.className =
+            "status-slider-row";
+
+
+        const slider =
+            document.createElement(
+                "input"
+            );
+
+        slider.type =
+            "range";
+
+        slider.min =
+            "0";
+
+        slider.max =
+            String(
+                STATUS_STEPS.length - 1
+            );
+
+        slider.step =
+            "1";
+
+        slider.value =
+            String(
+                STATUS_STEPS.indexOf(currentStatus)
+            );
+
+
+        const sliderLabel =
+            document.createElement(
+                "div"
+            );
+
+        sliderLabel.className =
+            "status-slider-label";
+
+        sliderLabel.textContent =
+            statusInfo.label;
+
+
+        slider.addEventListener(
+            "input",
+            () => {
+
+                const stepIndex =
+                    Number(
+                        slider.value
+                    );
+
+                const status =
+                    STATUS_STEPS[stepIndex];
+
+                const info =
+                    STATUS_INFO[status];
+
+                sliderLabel.textContent =
+                    info.label;
+
+            }
+        );
+
+
+        slider.addEventListener(
+            "change",
+            async () => {
+
+                const stepIndex =
+                    Number(
+                        slider.value
+                    );
+
+                const status =
+                    STATUS_STEPS[stepIndex];
+
+                await updateOrderStatus(
+                    documentId,
+                    status
+                );
+
+            }
+        );
+
+
+        sliderRow.appendChild(
+            slider
+        );
+
+        sliderRow.appendChild(
+            sliderLabel
+        );
+
+
+        // ------------------------------------------
+        // 組み立て
+        // ------------------------------------------
+
+        card.appendChild(
+            header
+        );
+
+        card.appendChild(
+            timeEl
+        );
+
+        card.appendChild(
+            itemsEl
+        );
+
+        card.appendChild(
+            sliderRow
+        );
+
+
+        return card;
+
+    }
+
+
+    // ==================================================
+    // ステータス更新
+    // ==================================================
+
+    async function updateOrderStatus(documentId, status) {
+
+        try {
+
+            const documentRef =
+                doc(
+                    db,
+                    "test",
+                    documentId
+                );
+
+            await updateDoc(
+                documentRef,
+                {
+                    status:
+                        status
+                }
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+            alert(
+                "ステータスの更新に失敗しました\n\n" +
+                error.message
+            );
+
+        }
+
+    }
+
+
+    // ==================================================
+    // 更新ボタン
+    // ==================================================
+
+    document.getElementById(
+        "refreshOrdersButton"
+    ).addEventListener(
+        "click",
+        () => {
+
+            if (db) {
+
+                watchOrders();
+
+            }
+
+        }
+    );
+
+
+
+    // ==================================================
+    // 番号札発券
+    // ==================================================
+
+    async function issueTicket() {
+
+        if (currentItems.length === 0) {
+
+            alert(
+                "商品が追加されていません"
+            );
+
+            return;
+        }
+
+        if (!db) {
+
+            alert(
+                "Firebaseに接続されていません"
+            );
+
+            return;
+        }
+
+
+        const button =
+            document.getElementById(
+                "issueButton"
+            );
+
+
+        button.disabled =
+            true;
+
+
+        button.textContent =
+            "発券中...";
+
+
+        try {
+
+            // ==================================================
+            // ① 新規ドキュメントID発行
+            //
+            // temp.py と同じ形式:
+            // ランダム6文字 + MMDD
+            //
+            // 衝突した場合は再生成する
+            // ==================================================
+
+            let documentId =
+                generateDocumentId();
+
+            let documentRef =
+                doc(
+                    db,
+                    "test",
+                    documentId
+                );
+
+            let existingSnapshot =
+                await getDoc(
+                    documentRef
+                );
+
+            let retryCount = 0;
+
+            while (
+                existingSnapshot.exists() &&
+                retryCount < 5
+            ) {
+
+                documentId =
+                    generateDocumentId();
+
+                documentRef =
+                    doc(
+                        db,
+                        "test",
+                        documentId
+                    );
+
+                existingSnapshot =
+                    await getDoc(
+                        documentRef
+                    );
+
+                retryCount++;
+
+            }
+
+
+            // ==================================================
+            // ② 今回の注文
+            //
+            // 1ドキュメント = 1注文
+            // orderId はドキュメントIDそのもの
+            // ==================================================
+
+            const orderId =
+                documentId;
+
+            const discountInput =
+                Number(
+                    document.getElementById(
+                        "discountInput"
+                    ).value
+                );
+
+            const discount =
+                Number.isFinite(discountInput) &&
+                discountInput > 0
+                    ? discountInput
+                    : 0;
+
+            const newOrder = {
+
+                creatAt:
+                    new Date().toLocaleString(
+                        "ja-JP"
+                    ),
+
+                discount:
+                    discount,
+
+                item:
+                    currentItems.map(
+                        (item) => (
+                            {
+                                productName:
+                                    item.productName,
+
+                                quantity:
+                                    item.quantity,
+
+                                unitPrice:
+                                    item.unitPrice
+                            }
+                        )
+                    ),
+
+                orderId:
+                    orderId,
+
+                status:
+                    0,
+
+                siteloaded:
+                    false,
+
+                tagNunber:
+                    orderId
+
+            };
+
+
+            // ==================================================
+            // ③ ドキュメント作成
+            // ==================================================
+
+            await setDoc(
+                documentRef,
+                newOrder
+            );
+
+
+            // ==================================================
+            // ④ お客様ページURL
+            // ==================================================
+
+            const customerUrl =
+                createCustomerUrl(
+                    documentId
+                );
+
+
+            lastUrl =
+                customerUrl;
+
+
+            // ==================================================
+            // ⑧ 結果表示
+            // ==================================================
+
+            document.getElementById(
+                "result"
+            ).style.display =
+                "block";
+
+
+            document.getElementById(
+                "resultTicketNumber"
+            ).textContent =
+                orderId;
+
+
+            document.getElementById(
+                "resultDocumentId"
+            ).textContent =
+                documentId;
+
+
+            document.getElementById(
+                "resultOrderId"
+            ).textContent =
+                orderId;
+
+
+            document.getElementById(
+                "resultStatus"
+            ).textContent =
+                "0";
+
+
+            // ==================================================
+            // ⑧-2 商品明細表示
+            // ==================================================
+
+            const resultItemList =
+                document.getElementById(
+                    "resultItemList"
+                );
+
+            resultItemList.innerHTML =
+                "";
+
+            newOrder.item.forEach(
+                (item) => {
+
+                    const row =
+                        document.createElement(
+                            "div"
+                        );
+
+                    row.className =
+                        "item-row";
+
+                    row.innerHTML =
+                        '<span class="item-row-name">' +
+                        item.productName +
+                        '</span>' +
+                        '<span class="item-row-detail">' +
+                        "¥" +
+                        item.unitPrice.toLocaleString("ja-JP") +
+                        " × " +
+                        item.quantity +
+                        "</span>";
+
+                    resultItemList.appendChild(
+                        row
+                    );
+
+                }
+            );
+
+            if (newOrder.discount > 0) {
+
+                const discountRow =
+                    document.createElement(
+                        "div"
+                    );
+
+                discountRow.className =
+                    "item-row";
+
+                discountRow.innerHTML =
+                    '<span class="item-row-name">割引</span>' +
+                    '<span class="item-row-detail">-¥' +
+                    newOrder.discount.toLocaleString("ja-JP") +
+                    '</span>';
+
+                resultItemList.appendChild(
+                    discountRow
+                );
+
+            }
+
+
+            // ==================================================
+            // ⑨ URL表示
+            // ==================================================
+
+            document.getElementById(
+                "resultUrl"
+            ).textContent =
+                customerUrl;
+
+
+            // ==================================================
+            // ⑩ QR生成
+            // ==================================================
+
+            const qr =
+                document.getElementById(
+                    "qrcode"
+                );
+
+
+            qr.innerHTML =
+                "";
+
+
+            new QRCode(
+                qr,
+                {
+
+                    text:
+                        customerUrl,
+
+                    width:
+                        220,
+
+                    height:
+                        220,
+
+                    correctLevel:
+                        QRCode.CorrectLevel.H
+
+                }
+            );
+
+
+            // ==================================================
+            // ⑪ 完了
+            // ==================================================
+
+            document.getElementById(
+                "status"
+            ).textContent =
+                "発券完了\n" +
+                "Document ID: " +
+                documentId;
+
+
+            // ==================================================
+            // ⑫ 入力フォームをリセット
+            // ==================================================
+
+            currentItems =
+                [];
+
+            renderItemList();
+
+            document.getElementById(
+                "discountInput"
+            ).value =
+                "0";
+
+
+        }
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+
+            document.getElementById(
+                "status"
+            ).textContent =
+                "発券エラー\n\n" +
+                error.message;
+
+
+            alert(
+                "発券に失敗しました\n\n" +
+                error.message
+            );
+
+        }
+
+
+        button.disabled =
+            false;
+
+
+        button.textContent =
+            "番号札を発券";
+
+    }
+
+    // ==================================================
+    // お客様ページURL
+    // ==================================================
+
+    function createCustomerUrl(
+        documentId
+    ) {
+
+
+        /*
+         * GitHub Pagesで
+         *
+         * /index.html
+         *
+         * をお客様ページとして使う。
+         *
+         * 1ドキュメント = 1注文のため
+         * doc パラメータのみで特定できる。
+         */
+
+
+        const baseUrl =
+            window.location.origin +
+            window.location.pathname
+                .replace(
+                    /shop\.html$/,
+                    ""
+                );
+
+
+        const customerPage =
+            baseUrl +
+            "index.html";
+
+
+        const url =
+            customerPage +
+            "?doc=" +
+            encodeURIComponent(
+                documentId
+            );
+
+
+        return url;
+
+    }
+
+
+
+    // ==================================================
+    // URLコピー
+    // ==================================================
+
+    document.getElementById(
+        "copyButton"
+    ).addEventListener(
+        "click",
+        async () => {
+
+
+            if (!lastUrl) {
+
+                return;
+
+            }
+
+
+            try {
+
+                await navigator.clipboard.writeText(
+                    lastUrl
+                );
+
+
+                const button =
+                    document.getElementById(
+                        "copyButton"
+                    );
+
+
+                button.textContent =
+                    "コピーしました";
+
+
+                setTimeout(
+                    () => {
+
+                        button.textContent =
+                            "URLをコピー";
+
+                    },
+                    1500
+                );
+
+
+            }
+            catch (error) {
+
+                alert(
+                    "URLをコピーできませんでした"
+                );
+
+            }
+
+        }
+    );
+
+
+
+    // ==================================================
+    // 発券ボタン
+    // ==================================================
+
+    document.getElementById(
+        "issueButton"
+    ).addEventListener(
+        "click",
+        issueTicket
+    );
+
+
+
+    // ==================================================
+    // Firebase開始
+    // ==================================================
+
+    startFirebase();
+
+
+</script>
+
+
+</body>
+
+</html>

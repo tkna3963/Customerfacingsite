@@ -5,3 +5,6 @@ case shipped = 4 //配達中
 case received = 5 //受け取り済み
 case called = 6 //呼び出し済み
 case served = 7 //提供済み
+
+
+https://tkna3963.github.io/Customerfacingsite/
