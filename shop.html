@@ -15,30 +15,855 @@
 
     <style>
 
-        .item-row,
-        .order-card-header {
-            display: flex;
-            justify-content: space-between;
+        * {
+            box-sizing: border-box;
         }
+
+
+        body {
+
+            margin: 0;
+
+            padding: 30px;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background: #f3f4f6;
+
+            color: #222;
+
+        }
+
+
+        .container {
+
+            max-width: 900px;
+
+            margin: 0 auto;
+
+        }
+
+
+        h1 {
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .panel {
+
+            background: white;
+
+            border-radius: 12px;
+
+            padding: 25px;
+
+            margin-bottom: 20px;
+
+            box-shadow:
+                0 2px 8px
+                rgba(0, 0, 0, 0.08);
+
+        }
+
+
+        .panel-title {
+
+            font-size: 20px;
+
+            font-weight: bold;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        #status {
+
+            padding: 12px;
+
+            border-radius: 8px;
+
+            background: #eeeeee;
+
+            white-space: pre-wrap;
+
+        }
+
+
+        .issue-area {
+
+            text-align: center;
+
+        }
+
+
+        .item-form {
+
+            display: grid;
+
+            grid-template-columns: 2fr 1fr 1fr auto;
+
+            gap: 10px;
+
+            margin-bottom: 15px;
+
+        }
+
+
+        .item-form input {
+
+            padding: 10px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 8px;
+
+            font-size: 15px;
+
+            width: 100%;
+
+        }
+
+
+        #addItemButton {
+
+            padding: 10px 16px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background: #444;
+
+            color: white;
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+        }
+
+
+        #addItemButton:hover {
+
+            background: #222;
+
+        }
+
+
+        .item-list {
+
+            text-align: left;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .item-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding: 10px 12px;
+
+            background: #f8f8f8;
+
+            border-radius: 8px;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .item-row-name {
+
+            font-weight: bold;
+
+        }
+
+
+        .item-row-detail {
+
+            color: #666;
+
+            font-size: 14px;
+
+            margin-left: 8px;
+
+        }
+
+
+        .removeItemButton {
+
+            border: none;
+
+            background: #ef4444;
+
+            color: white;
+
+            border-radius: 6px;
+
+            padding: 6px 12px;
+
+            cursor: pointer;
+
+            font-size: 13px;
+
+        }
+
+
+        .removeItemButton:hover {
+
+            background: #dc2626;
+
+        }
+
+
+        .item-empty {
+
+            color: #999;
+
+            text-align: center;
+
+            padding: 15px;
+
+        }
+
+
+        .discount-row {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 10px;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .discount-row input {
+
+            padding: 10px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 8px;
+
+            font-size: 15px;
+
+            width: 120px;
+
+        }
+
+
+        /* ==================================================
+           注文一覧管理（ステータス変更）
+        ================================================== */
+
+        .order-manage-list {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 16px;
+
+        }
+
+
+        .order-manage-empty {
+
+            color: #999;
+
+            text-align: center;
+
+            padding: 20px;
+
+        }
+
+
+        .order-card {
+
+            background: #f8f9fb;
+
+            border: 1px solid #e5e7eb;
+
+            border-radius: 12px;
+
+            padding: 18px;
+
+        }
+
+
+        .order-card-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: baseline;
+
+            margin-bottom: 8px;
+
+            flex-wrap: wrap;
+
+            gap: 8px;
+
+        }
+
+
+        .order-card-id {
+
+            font-weight: bold;
+
+            font-size: 16px;
+
+            font-family: monospace;
+
+        }
+
+
+        .order-card-time {
+
+            color: #888;
+
+            font-size: 13px;
+
+        }
+
+
+        .order-card-items {
+
+            color: #555;
+
+            font-size: 14px;
+
+            margin-bottom: 10px;
+
+            line-height: 1.6;
+
+        }
+
+
+        .item-detail-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            padding: 3px 0;
+
+        }
+
+
+        .item-detail-name {
+
+            flex: 1;
+
+        }
+
+
+        .item-detail-sub {
+
+            color: #888;
+
+            margin-left: 6px;
+
+        }
+
+
+        .item-detail-subtotal {
+
+            white-space: nowrap;
+
+            font-weight: 600;
+
+        }
+
+
+        .order-card-discount-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            padding: 3px 0;
+
+            color: #dc2626;
+
+            font-size: 14px;
+
+        }
+
+
+        .order-card-total-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            padding: 8px 0;
+
+            margin-bottom: 10px;
+
+            border-top: 1px dashed #ccc;
+
+            font-weight: bold;
+
+            font-size: 16px;
+
+        }
+
+
+        .order-card-pickup {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            font-size: 14px;
+
+            color: #444;
+
+            margin-bottom: 14px;
+
+            background: #eef2ff;
+
+            border-radius: 8px;
+
+            padding: 8px 12px;
+
+        }
+
+
+        .order-card-pickup-label {
+
+            color: #666;
+
+        }
+
+
+        .order-card-pickup-value {
+
+            font-weight: bold;
+
+            color: #4338ca;
+
+        }
+
+
+        .order-card-toggle-row {
+
+            display: flex;
+
+            gap: 10px;
+
+            margin-top: 12px;
+
+        }
+
+
+        .toggle-detail-button {
+
+            flex: 1;
+
+            padding: 8px 10px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 8px;
+
+            background: white;
+
+            color: #444;
+
+            font-size: 13px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+        }
+
+
+        .toggle-detail-button:hover {
+
+            background: #f3f4f6;
+
+        }
+
+
+        .order-card-detail {
+
+            display: none;
+
+            margin-top: 14px;
+
+            padding-top: 14px;
+
+            border-top: 1px solid #e5e7eb;
+
+        }
+
+
+        .order-card-detail.open {
+
+            display: block;
+
+        }
+
+
+        .order-card-detail-qr {
+
+            display: flex;
+
+            justify-content: center;
+
+            margin-bottom: 12px;
+
+        }
+
+
+        .order-card-raw {
+
+            background: #111827;
+
+            color: #d1fae5;
+
+            font-family: monospace;
+
+            font-size: 12px;
+
+            padding: 12px;
+
+            border-radius: 8px;
+
+            white-space: pre-wrap;
+
+            word-break: break-all;
+
+            max-height: 280px;
+
+            overflow-y: auto;
+
+        }
+
 
         .status-slider-row {
+
             display: flex;
+
             align-items: center;
-            gap: 8px;
+
+            gap: 12px;
+
         }
+
 
         .status-slider-row input[type="range"] {
+
             flex: 1;
+
+            accent-color: #2563eb;
+
         }
+
+
+        .status-slider-label {
+
+            min-width: 92px;
+
+            text-align: right;
+
+            font-weight: bold;
+
+            font-size: 14px;
+
+        }
+
+
+        .status-badge {
+
+            display: inline-block;
+
+            padding: 4px 10px;
+
+            border-radius: 999px;
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+            color: white;
+
+            background: #94a3b8;
+
+        }
+
+
+        .status-badge.st-ordered {
+            background: #64748b;
+        }
+
+        .status-badge.st-cooking {
+            background: #f59e0b;
+        }
+
+        .status-badge.st-shipped {
+            background: #3b82f6;
+        }
+
+        .status-badge.st-received {
+            background: #10b981;
+        }
+
+        .status-badge.st-called {
+            background: #8b5cf6;
+        }
+
+        .status-badge.st-served {
+            background: #16a34a;
+        }
+
+
+        #refreshOrdersButton {
+
+            padding: 8px 16px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background: #444;
+
+            color: white;
+
+            font-size: 14px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+        }
+
+
+        #refreshOrdersButton:hover {
+
+            background: #222;
+
+        }
+
+
+        #issueButton {
+
+            width: 100%;
+
+            max-width: 500px;
+
+            padding: 20px;
+
+            border: none;
+
+            border-radius: 10px;
+
+            background: #2563eb;
+
+            color: white;
+
+            font-size: 22px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+        }
+
+
+        #issueButton:hover {
+
+            background: #1d4ed8;
+
+        }
+
+
+        #issueButton:disabled {
+
+            background: #999;
+
+            cursor: not-allowed;
+
+        }
+
 
         #result {
+
             display: none;
+
         }
 
+
         .result-grid {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 30px;
+
+        }
+
+
+        .ticket-number {
+
+            font-size: 70px;
+
+            font-weight: bold;
+
+            text-align: center;
+
+            margin: 20px 0;
+
+        }
+
+
+        .info {
+
+            margin-top: 15px;
+
+        }
+
+
+        .info-label {
+
+            color: #666;
+
+            font-size: 14px;
+
+            margin-bottom: 4px;
+
+        }
+
+
+        .info-value {
+
+            font-weight: bold;
+
+            word-break: break-all;
+
+        }
+
+
+        .qr-area {
+
+            text-align: center;
+
+        }
+
+
+        #qrcode {
+
+            display: inline-block;
+
+            padding: 15px;
+
+            background: white;
+
+            border: 1px solid #ddd;
+
+            border-radius: 10px;
+
+        }
+
+
+        .url-box {
+
+            margin-top: 15px;
+
+            padding: 12px;
+
+            background: #f3f4f6;
+
+            border-radius: 8px;
+
+            word-break: break-all;
+
+            font-family: monospace;
+
+            font-size: 13px;
+
+            text-align: left;
+
+        }
+
+
+        #copyButton {
+
+            margin-top: 10px;
+
+            padding: 12px 20px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background: #16a34a;
+
+            color: white;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+        }
+
+
+        #copyButton:hover {
+
+            background: #15803d;
+
+        }
+
+
+        @media (max-width: 700px) {
+
+            body {
+
+                padding: 15px;
+
+            }
+
+
+            .result-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .ticket-number {
+
+                font-size: 55px;
+
+            }
+
         }
 
     </style>
@@ -321,6 +1146,7 @@
 
         <div
             class="panel-title"
+            style="display: flex; justify-content: space-between; align-items: center;"
         >
 
             <span>
@@ -795,12 +1621,12 @@
 
     const STATUS_INFO = {
 
-        1: { label: "注文済み" },
-        2: { label: "調理中" },
-        4: { label: "配達中" },
-        5: { label: "受け取り済み" },
-        6: { label: "呼び出し済み" },
-        7: { label: "提供済み" }
+        1: { label: "注文済み", cls: "st-ordered" },
+        2: { label: "調理中", cls: "st-cooking" },
+        4: { label: "配達中", cls: "st-shipped" },
+        5: { label: "受け取り済み", cls: "st-received" },
+        6: { label: "呼び出し済み", cls: "st-called" },
+        7: { label: "提供済み", cls: "st-served" }
 
     };
 
@@ -969,7 +1795,8 @@
             );
 
         badge.className =
-            "status-badge";
+            "status-badge " +
+            statusInfo.cls;
 
         badge.textContent =
             statusInfo.label;
@@ -1002,7 +1829,7 @@
 
 
         // ------------------------------------------
-        // 商品明細
+        // 商品明細（単価・数量・小計）
         // ------------------------------------------
 
         const itemsEl =
@@ -1018,6 +1845,9 @@
                 ? data.item
                 : [];
 
+        let itemsSubtotal =
+            0;
+
         if (items.length === 0) {
 
             itemsEl.textContent =
@@ -1025,15 +1855,129 @@
 
         } else {
 
-            itemsEl.textContent =
-                items.map(
-                    (item) =>
+            items.forEach(
+                (item) => {
+
+                    const unitPrice =
+                        Number(
+                            item.unitPrice ?? 0
+                        );
+
+                    const quantity =
+                        Number(
+                            item.quantity ?? 0
+                        );
+
+                    const subtotal =
+                        unitPrice *
+                        quantity;
+
+                    itemsSubtotal +=
+                        subtotal;
+
+
+                    const row =
+                        document.createElement(
+                            "div"
+                        );
+
+                    row.className =
+                        "item-detail-row";
+
+                    row.innerHTML =
+                        '<span class="item-detail-name">' +
                         (item.productName ?? "商品") +
-                        " × " +
-                        (item.quantity ?? 0)
-                ).join("、");
+                        '<span class="item-detail-sub">×' +
+                        quantity +
+                        '</span></span>' +
+                        '<span class="item-detail-subtotal">¥' +
+                        subtotal.toLocaleString("ja-JP") +
+                        '</span>';
+
+                    itemsEl.appendChild(
+                        row
+                    );
+
+                }
+            );
 
         }
+
+
+        // ------------------------------------------
+        // 割引・合計金額
+        // ------------------------------------------
+
+        const discount =
+            Number(
+                data.discount ?? 0
+            );
+
+        const totalAmount =
+            Math.max(
+                0,
+                itemsSubtotal - discount
+            );
+
+        if (discount > 0) {
+
+            const discountRow =
+                document.createElement(
+                    "div"
+                );
+
+            discountRow.className =
+                "order-card-discount-row";
+
+            discountRow.innerHTML =
+                '<span>割引</span>' +
+                '<span>-¥' +
+                discount.toLocaleString("ja-JP") +
+                '</span>';
+
+            itemsEl.appendChild(
+                discountRow
+            );
+
+        }
+
+        const totalRow =
+            document.createElement(
+                "div"
+            );
+
+        totalRow.className =
+            "order-card-total-row";
+
+        totalRow.innerHTML =
+            '<span>合計金額</span>' +
+            '<span>¥' +
+            totalAmount.toLocaleString("ja-JP") +
+            '</span>';
+
+
+        // ------------------------------------------
+        // 受け取り予定時刻
+        // ------------------------------------------
+
+        const pickupRow =
+            document.createElement(
+                "div"
+            );
+
+        pickupRow.className =
+            "order-card-pickup";
+
+        const pickupText =
+            formatPickupTimeForShop(
+                data.pickupTime
+            );
+
+        pickupRow.innerHTML =
+            '<span class="order-card-pickup-label">お客様設定の受け取り予定時刻</span>' +
+            '<span class="order-card-pickup-value">' +
+            pickupText +
+            '</span>';
 
 
         // ------------------------------------------
@@ -1139,6 +2083,83 @@
 
 
         // ------------------------------------------
+        // 詳細開閉ボタン（QR・生データ）
+        // ------------------------------------------
+
+        const toggleRow =
+            document.createElement(
+                "div"
+            );
+
+        toggleRow.className =
+            "order-card-toggle-row";
+
+
+        const toggleButton =
+            document.createElement(
+                "button"
+            );
+
+        toggleButton.type =
+            "button";
+
+        toggleButton.className =
+            "toggle-detail-button";
+
+        toggleButton.textContent =
+            "QR・生データを表示";
+
+
+        const detailBlock =
+            document.createElement(
+                "div"
+            );
+
+        detailBlock.className =
+            "order-card-detail";
+
+
+        let detailBuilt =
+            false;
+
+
+        toggleButton.addEventListener(
+            "click",
+            () => {
+
+                const isOpen =
+                    detailBlock.classList.toggle(
+                        "open"
+                    );
+
+                toggleButton.textContent =
+                    isOpen
+                        ? "QR・生データを隠す"
+                        : "QR・生データを表示";
+
+                if (isOpen && !detailBuilt) {
+
+                    buildOrderDetail(
+                        detailBlock,
+                        documentId,
+                        data
+                    );
+
+                    detailBuilt =
+                        true;
+
+                }
+
+            }
+        );
+
+
+        toggleRow.appendChild(
+            toggleButton
+        );
+
+
+        // ------------------------------------------
         // 組み立て
         // ------------------------------------------
 
@@ -1155,11 +2176,179 @@
         );
 
         card.appendChild(
+            totalRow
+        );
+
+        card.appendChild(
+            pickupRow
+        );
+
+        card.appendChild(
             sliderRow
+        );
+
+        card.appendChild(
+            toggleRow
+        );
+
+        card.appendChild(
+            detailBlock
         );
 
 
         return card;
+
+    }
+
+
+    // ==================================================
+    // 受け取り予定時刻のフォーマット（shop側表示用）
+    // ==================================================
+
+    function formatPickupTimeForShop(pickupTimeIso) {
+
+        if (!pickupTimeIso) {
+
+            return "未設定";
+
+        }
+
+        const date =
+            new Date(
+                pickupTimeIso
+            );
+
+        if (isNaN(date.getTime())) {
+
+            return "未設定";
+
+        }
+
+        const hh =
+            String(
+                date.getHours()
+            ).padStart(2, "0");
+
+        const mm =
+            String(
+                date.getMinutes()
+            ).padStart(2, "0");
+
+        return (
+            hh +
+            ":" +
+            mm
+        );
+
+    }
+
+
+    // ==================================================
+    // 注文詳細（QRコード・Firebase生データ）
+    // ==================================================
+
+    function buildOrderDetail(container, documentId, data) {
+
+        container.innerHTML =
+            "";
+
+
+        // ------------------------------------------
+        // QRコード
+        // ------------------------------------------
+
+        const qrWrapper =
+            document.createElement(
+                "div"
+            );
+
+        qrWrapper.className =
+            "order-card-detail-qr";
+
+        const qrTarget =
+            document.createElement(
+                "div"
+            );
+
+        container.appendChild(
+            qrWrapper
+        );
+
+        qrWrapper.appendChild(
+            qrTarget
+        );
+
+        try {
+
+            new QRCode(
+                qrTarget,
+                {
+                    text:
+                        createCustomerUrl(
+                            documentId
+                        ),
+
+                    width:
+                        140,
+
+                    height:
+                        140
+                }
+            );
+
+        }
+        catch (error) {
+
+            qrTarget.textContent =
+                "QR生成に失敗しました";
+
+        }
+
+
+        // ------------------------------------------
+        // Firebase生データ（JSON）
+        // ------------------------------------------
+
+        const rawTitle =
+            document.createElement(
+                "div"
+            );
+
+        rawTitle.className =
+            "info-label";
+
+        rawTitle.textContent =
+            "Firebase 生データ（test/" +
+            documentId +
+            "）";
+
+        rawTitle.style.marginBottom =
+            "6px";
+
+
+        const rawBlock =
+            document.createElement(
+                "pre"
+            );
+
+        rawBlock.className =
+            "order-card-raw";
+
+        rawBlock.textContent =
+            JSON.stringify(
+                data,
+                null,
+                2
+            );
+
+
+        container.appendChild(
+            rawTitle
+        );
+
+        container.appendChild(
+            rawBlock
+        );
 
     }
 
@@ -1618,7 +2807,7 @@
         /*
          * GitHub Pagesで
          *
-         * /Customer.html
+         * /customer.html
          *
          * をお客様ページとして使う。
          *
@@ -1638,7 +2827,7 @@
 
         const customerPage =
             baseUrl +
-            "Customer.html";
+            "customer.html";
 
 
         const url =

@@ -233,6 +233,60 @@
             color: #2563eb;
         }
 
+        /* ==================================================
+           受け取り予定時刻
+        ================================================== */
+
+        .pickup-time-value {
+            font-size: 22px;
+            color: #2563eb;
+        }
+
+        .pickup-button-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pickup-button {
+            flex: 1;
+            min-width: 90px;
+            padding: 12px 10px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .pickup-button:hover {
+            background: #1d4ed8;
+        }
+
+        .pickup-button:active {
+            transform: scale(0.97);
+        }
+
+        .pickup-reset-button {
+            flex: 1;
+            min-width: 90px;
+            padding: 12px 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: white;
+            color: #555;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .pickup-reset-button:hover {
+            background: #f3f4f6;
+        }
+
         @media (max-width: 600px) {
             body {
                 padding: 14px;
@@ -314,6 +368,45 @@
                 </div>
             </div>
 
+            <div class="info">
+                <div class="info-label">
+                    受け取り予定時刻
+                </div>
+
+                <div id="pickupTime" class="info-value pickup-time-value">
+                    未設定
+                </div>
+
+                <div class="pickup-button-row">
+
+                    <button
+                        type="button"
+                        class="pickup-button"
+                        id="pickup10Button"
+                    >
+                        +10分
+                    </button>
+
+                    <button
+                        type="button"
+                        class="pickup-button"
+                        id="pickup15Button"
+                    >
+                        +15分
+                    </button>
+
+                    <button
+                        type="button"
+                        class="pickup-reset-button"
+                        id="pickupResetButton"
+                    >
+                        リセット
+                    </button>
+
+                </div>
+
+            </div>
+
         </div>
 
     </div>
@@ -382,7 +475,8 @@
     import {
         getFirestore,
         doc,
-        onSnapshot
+        onSnapshot,
+        updateDoc
     }
     from
     "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
@@ -396,11 +490,19 @@
 
 
     // ==================================================
+    // このページで参照するドキュメント参照
+    // 受け取り時刻の更新などで使う
+    // ==================================================
+
+    let currentDocumentRef = null;
+
+
+    // ==================================================
     // URLパラメータ
     //
     // 店側HTMLが作るURL:
     //
-    // index.html?doc=Rdvs0e0912&id=1
+    // customer.html?doc=abc123XXXX
     //
     // ==================================================
 
@@ -618,6 +720,194 @@
     }
 
 
+    // ==================================================
+    // 受け取り予定時刻
+    //
+    // Firestoreには ISO文字列 (Date#toISOString) で保存する
+    // ==================================================
+
+    function formatPickupTime(isoString) {
+
+        const date =
+            new Date(
+                isoString
+            );
+
+        if (isNaN(date.getTime())) {
+            return null;
+        }
+
+        const hh =
+            String(
+                date.getHours()
+            ).padStart(2, "0");
+
+        const mm =
+            String(
+                date.getMinutes()
+            ).padStart(2, "0");
+
+        return (
+            hh +
+            ":" +
+            mm
+        );
+
+    }
+
+
+    function renderPickupTime(pickupTimeIso) {
+
+        const el =
+            document.getElementById(
+                "pickupTime"
+            );
+
+        const formatted =
+            pickupTimeIso
+                ? formatPickupTime(pickupTimeIso)
+                : null;
+
+        el.textContent =
+            formatted ??
+            "未設定";
+
+        el.dataset.iso =
+            pickupTimeIso ??
+            "";
+
+    }
+
+
+    // ==================================================
+    // 受け取り予定時刻の更新
+    //
+    // 現在の予定時刻（未設定なら現在時刻）を基準に
+    // 指定した分数だけ進める
+    // ==================================================
+
+    async function adjustPickupTime(minutes) {
+
+        if (!currentDocumentRef) {
+            return;
+        }
+
+        try {
+
+            const baseTimeText =
+                document.getElementById(
+                    "pickupTime"
+                ).dataset.iso;
+
+            const baseDate =
+                (baseTimeText && baseTimeText !== "")
+                    ? new Date(baseTimeText)
+                    : new Date();
+
+            const newDate =
+                new Date(
+                    baseDate.getTime() +
+                    minutes * 60 * 1000
+                );
+
+            await updateDoc(
+                currentDocumentRef,
+                {
+                    pickupTime:
+                        newDate.toISOString()
+                }
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+            alert(
+                "受け取り予定時刻の更新に失敗しました\n\n" +
+                error.message
+            );
+
+        }
+
+    }
+
+
+    async function resetPickupTime() {
+
+        if (!currentDocumentRef) {
+            return;
+        }
+
+        try {
+
+            await updateDoc(
+                currentDocumentRef,
+                {
+                    pickupTime:
+                        new Date().toISOString()
+                }
+            );
+
+        }
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+            alert(
+                "受け取り予定時刻のリセットに失敗しました\n\n" +
+                error.message
+            );
+
+        }
+
+    }
+
+
+    document.getElementById(
+        "pickup10Button"
+    ).addEventListener(
+        "click",
+        () => {
+
+            adjustPickupTime(
+                10
+            );
+
+        }
+    );
+
+
+    document.getElementById(
+        "pickup15Button"
+    ).addEventListener(
+        "click",
+        () => {
+
+            adjustPickupTime(
+                15
+            );
+
+        }
+    );
+
+
+    document.getElementById(
+        "pickupResetButton"
+    ).addEventListener(
+        "click",
+        () => {
+
+            resetPickupTime();
+
+        }
+    );
+
+
     function showOrder(order) {
 
         document.getElementById(
@@ -678,6 +968,12 @@
             "createdAt"
         ).textContent =
             order.creatAt ?? "-";
+
+
+        // 受け取り予定時刻
+        renderPickupTime(
+            order.pickupTime
+        );
 
 
         // 割引
@@ -900,6 +1196,9 @@
                     "test",
                     documentId
                 );
+
+            currentDocumentRef =
+                documentRef;
 
 
             // ==================================================
